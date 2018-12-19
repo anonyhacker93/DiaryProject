@@ -1,0 +1,53 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:paddingTop="100dp"
+    >
+
+    <EditText
+        android:id="@+id/uname"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        android:gravity="center"
+        android:hint="User Name"
+        android:text="Dinesh" />
+
+    <EditText
+        android:id="@+id/upassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        android:layout_marginTop="50dp"
+        android:gravity="center"
+        android:hint="User Password"
+        android:inputType="numberPassword"
+        android:text="1234" />
+
+    <Button
+        android:layout_marginTop="40dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="LOGIN"
+        android:layout_marginHorizontal="80dp"
+        android:background="@drawable/rounded_button"
+        android:textColor="@android:color/white"
+        android:id="@+id/btnLogin"
+        />
+
+    <Button
+        android:id="@+id/btnSignup"
+        android:layout_marginTop="30dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="SIGN UP"
+        android:layout_marginHorizontal="80dp"
+        android:background="@drawable/rounded_button"
+        android:textColor="@android:color/white"
+        />
+</LinearLayout>
