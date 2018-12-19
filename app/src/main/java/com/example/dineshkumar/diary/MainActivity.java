@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.MenuItemCompat;
@@ -17,10 +16,10 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.MenuInflater;
-import android.view.View;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -50,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     CustomHomeRecyclerAdapter homeListAdapter;
 
     public static String orderBy = "created_date desc";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         ButterKnife.bind(this);
         database = new DiaryDatabase(this);
-      //  addData();
+        //  addData();
         setFAB();
         setHomeRecycler();
 
@@ -71,7 +71,11 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.addCatgMenu) {
-            startActivity(new Intent(this,AddCategory.class));
+            startActivity(new Intent(this, AddCategory.class));
+            return true;
+        }
+        if (id == R.id.showCatgMenu) {
+            ShowCategoryFilterDialog("Title", "Msg is here");
             return true;
         }
 
@@ -79,22 +83,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    void setFAB()
-    {
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.writeDiaryFab);
+    void setFAB() {
+        FloatingActionButton fab = findViewById(R.id.writeDiaryFab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this,WriteDiary.class);
+                Intent intent = new Intent(MainActivity.this, WriteDiary.class);
                 startActivity(intent);
             }
         });
     }
 
-    void setHomeRecycler()
-    {
+    void setHomeRecycler() {
         ArrayList<Diary> diaryArrayList = database.getData(orderBy);
-        homeListAdapter = new CustomHomeRecyclerAdapter(diaryArrayList,this);
+        homeListAdapter = new CustomHomeRecyclerAdapter(diaryArrayList, this);
 
         homeRecycler.setLayoutManager(new LinearLayoutManager(this));
         homeRecycler.setHasFixedSize(true);
@@ -103,18 +105,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
-        if(searchView != null) {
+        if (searchView != null) {
             searchView.setQuery("", false);
         }
         refreshHomeRecycler(orderBy);
     }
 
-    public void refreshHomeRecycler(String orderBy)
-    {
-        Log.i("refresh","Data refreshed");
+    public void refreshHomeRecycler(String orderBy) {
+        Log.i("refresh", "Data refreshed");
         ArrayList<Diary> diaryArrayList = database.getData(orderBy);
         homeListAdapter.addData(diaryArrayList);
         homeListAdapter.notifyDataSetChanged();
@@ -133,10 +133,10 @@ public class MainActivity extends AppCompatActivity {
         MenuItem item = menu.findItem(R.id.spinner);
         final Spinner searchFilterSpinner = (Spinner) MenuItemCompat.getActionView(item);
 
-       // String values[]={"By Date","By Title","Modified Date"};
-      //  ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,R.array.spinner_list_item_array, android.R.layout.simple_spinner_item);
-       String filterValues[] = {"Filter By","Title","Category","Created Date","Modified Date"};
-       ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,R.layout.catg_filter_spinner_layout,R.id.catg_spinner_row,filterValues);
+        // String values[]={"By Date","By Title","Modified Date"};
+        //  ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,R.array.spinner_list_item_array, android.R.layout.simple_spinner_item);
+        String filterValues[] = {"Filter By", "Title", "Category", "Created Date", "Modified Date"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.catg_filter_spinner_layout, R.id.catg_spinner_row, filterValues);
         searchFilterSpinner.setAdapter(adapter);
 
         setSearchFilter(searchFilterSpinner);
@@ -146,9 +146,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void checkAppUseCount() {
         SharedPreferences prefs = this.getSharedPreferences("AppSetting", Context.MODE_PRIVATE);
-        appUseCount = prefs.getInt("appUseCount",0);
-        if(appUseCount == 0)
-        {
+        appUseCount = prefs.getInt("appUseCount", 0);
+        if (appUseCount == 0) {
 
             CategoryDatabase categoryDatabase = new CategoryDatabase(this);
             categoryDatabase.addCategory("Note");
@@ -159,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
         }
         appUseCount++;
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putInt("appUseCount",appUseCount);
+        editor.putInt("appUseCount", appUseCount);
         editor.commit();
     }
 
@@ -185,8 +184,6 @@ public class MainActivity extends AppCompatActivity {
                         refreshHomeRecycler(orderBy);
                         break;
                     case 4: //show category list for filteration
-                        Toast.makeText(MainActivity.this, "Choose catg", Toast.LENGTH_SHORT).show();
-                        ShowCategoryFilterDialog("Title","Msg is here");
                         searchFilterSpinner.setSelection(0);
                         break;
                 }
@@ -202,28 +199,27 @@ public class MainActivity extends AppCompatActivity {
 
 
     // When user filter by category. It shows a list of available categories in a Dialogbox
-    void ShowCategoryFilterDialog(String title,String msg)
-    {
+    void ShowCategoryFilterDialog(String title, String msg) {
         final Dialog dialogCatg = new Dialog(this);
         dialogCatg.setContentView(R.layout.category_dialog);
 
         CategoryDatabase categoryDatabase = new CategoryDatabase(this);
-        final ArrayList <String>cat_list = categoryDatabase.getCategories();
+        final ArrayList<String> cat_list = categoryDatabase.getCategories();
 
         final ListView list = (ListView) dialogCatg.findViewById(R.id.dialog_category_list);
 
-        final ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,cat_list);
+        final ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, cat_list);
         list.setAdapter(adapter);
 
         //choose category from dialog's list
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String catgItem = (String)list.getItemAtPosition(position);
+                String catgItem = (String) list.getItemAtPosition(position);
 
                 //Refreshing Home Recycler Adapter by Category
                 DiaryDatabase db = new DiaryDatabase(MainActivity.this);
-                ArrayList<Diary> catgList = db.getData("category",catgItem);
+                ArrayList<Diary> catgList = db.getData("category", catgItem);
                 homeListAdapter.addData(catgList);
                 homeListAdapter.notifyDataSetChanged();
 
@@ -253,21 +249,20 @@ public class MainActivity extends AppCompatActivity {
                 });
 
                 AlertDialog dialogDeleteConfirm = builder.create();
-                dialogDeleteConfirm .setTitle("Want to delete it ?");
-                dialogDeleteConfirm .show();
+                dialogDeleteConfirm.setTitle("Want to delete it ?");
+                dialogDeleteConfirm.show();
                 return true;
             }
         });
         dialogCatg.show();
     }
 
-    void inflateSearchMenu(Menu menu)
-    {
+    void inflateSearchMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.search_menu, menu);
 
         // Associate searchable configuration with the SearchView
-         setSearchBox(menu);
+        setSearchBox(menu);
 
     }
 
@@ -279,8 +274,7 @@ public class MainActivity extends AppCompatActivity {
         searchView.setSearchableInfo(
                 searchManager.getSearchableInfo(getComponentName()));
 
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
-        {
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 return false;
@@ -289,9 +283,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextChange(String newText) {
 
-                ArrayList<Diary> diariesList =database.getDataByWordMatch(newText);
-                if( diariesList!= null)
-                {
+                ArrayList<Diary> diariesList = database.getDataByWordMatch(newText);
+                if (diariesList != null) {
                     homeListAdapter.addData(diariesList);
                     homeListAdapter.notifyDataSetChanged();
                 }

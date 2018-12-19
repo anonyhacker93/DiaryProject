@@ -39,13 +39,14 @@ public class CustomHomeRecyclerAdapter extends RecyclerView.Adapter<CustomHomeRe
         Context context;
 
         TextView titleTv;
-
+        TextView categoryTv;
         TextView dateTv;
 
         public MyViewHolders(View itemView) {
             super(itemView);
             titleTv = (TextView)itemView.findViewById(R.id.homeDiaryTitle);
             dateTv = (TextView)itemView.findViewById(R.id.homeDiaryDate);
+            categoryTv = itemView.findViewById(R.id.txtViewCategory);
             context = itemView.getContext();
 
             CardView homeCardView = (CardView)itemView.findViewById(R.id.homeCardView);
@@ -113,7 +114,7 @@ public class CustomHomeRecyclerAdapter extends RecyclerView.Adapter<CustomHomeRe
         Diary diary = diaryArrayList.get(position);
         holder.titleTv.setText(diary.getTitle());
         holder.dateTv.setText(diary.getCreatedDate());
-
+        holder.categoryTv.setText(diary.getCategory());
     }
 
     @Override

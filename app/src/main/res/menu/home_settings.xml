@@ -5,6 +5,11 @@ tools:context="com.example.dineshkumar.diary.MainActivity">
 <item
     android:id="@+id/addCatgMenu"
     android:orderInCategory="100"
-    android:title="Add Category"
+    android:title="@string/add_category"
     app:showAsAction="never" />
+    <item
+        android:id="@+id/showCatgMenu"
+        android:orderInCategory="101"
+        android:title="@string/show_category"
+        app:showAsAction="never" />
 </menu>
