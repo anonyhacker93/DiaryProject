@@ -4,7 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.dineshkumar.diary.WriteDiary">
+    tools:context="com.example.dineshkumar.diary.WriteDiary"
+
+    >
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -27,20 +29,22 @@
 
         >
     <RelativeLayout
-    android:paddingTop="10dp"
+    android:paddingTop="20dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-
+        android:background="@color/colorLayoutBG"
         >
 
         <EditText
             android:id="@+id/edTitle"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="37dp"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
+            android:layout_marginTop="10dp"
 
+            android:background="@drawable/rounded_corner"
             android:ems="10"
             android:hint="Title"
             android:inputType="textPersonName"
@@ -49,9 +53,8 @@
         <EditText
             android:id="@+id/edDesc"
             android:layout_width="match_parent"
-            android:layout_height="180dp"
+            android:layout_height="300dp"
             android:layout_below="@+id/edTitle"
-            android:layout_centerHorizontal="true"
             android:layout_marginTop="25dp"
             android:ems="10"
             android:gravity="top"
@@ -59,25 +62,32 @@
             android:inputType="text|textMultiLine"
             android:layout_marginLeft="50dp"
             android:layout_marginRight="50dp"
+            android:background="@drawable/rounded_corner"
             />
 
         <android.support.v7.widget.AppCompatSpinner
             android:id="@+id/categorySpinner"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="62dp"
+            android:layout_height="32dp"
             android:layout_below="@id/edDesc"
             android:layout_marginLeft="55dp"
+            android:backgroundTint="#ffffff"
+            android:layout_marginTop="52dp"
+           android:background="@drawable/rounded_border"
 
-            android:layout_marginTop="50dp"></android.support.v7.widget.AppCompatSpinner>
+            ></android.support.v7.widget.AppCompatSpinner>
 
         <Button
             android:id="@+id/btnSave"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/edDesc"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="111dp"
-            android:text="Save" />
+            android:layout_height="36dp"
+            android:layout_alignRight="@id/edDesc"
+            android:layout_below="@id/edDesc"
+            android:layout_marginTop="52dp"
+            android:background="@drawable/rounded_button"
+            android:backgroundTint="@color/colorPrimary"
+            android:text="Save"
+            android:textColor="#ffffff" />
 
 
     </RelativeLayout>

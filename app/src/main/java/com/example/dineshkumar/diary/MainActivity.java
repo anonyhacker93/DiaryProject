@@ -135,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
 
        // String values[]={"By Date","By Title","Modified Date"};
       //  ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,R.array.spinner_list_item_array, android.R.layout.simple_spinner_item);
-       String filterValues[] = {"Filter By","By Created Date","By Title","By Modified Date","By Category"};
+       String filterValues[] = {"Filter By","Title","Category","Created Date","Modified Date"};
        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,R.layout.catg_filter_spinner_layout,R.id.catg_spinner_row,filterValues);
         searchFilterSpinner.setAdapter(adapter);
 

@@ -43,7 +43,7 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
         app:elevation="10dp"
-        app:backgroundTint="@color/colorAccent"
-        app:srcCompat="@drawable/ic_note_add_black_36"/>
+        app:backgroundTint="@color/colorPrimary"
+        android:src="@drawable/ic_edit_black_24dp"/>
 
 </android.support.design.widget.CoordinatorLayout>

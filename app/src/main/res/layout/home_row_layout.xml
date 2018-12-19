@@ -8,10 +8,11 @@
 <android.support.v7.widget.CardView
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="10dp"
+    android:layout_margin="5dp"
     app:cardCornerRadius="10dp"
     android:elevation="20dp"
     android:id="@+id/homeCardView"
+    android:backgroundTint="#4FC3F7"
 
     >
    <LinearLayout
@@ -21,29 +22,37 @@
 
        >
        <ImageView
-
+           android:layout_margin="5dp"
            android:layout_width="60dp"
            android:layout_height="60dp"
-
+            android:src="@drawable/ic_import_contacts_black_24dp"
            />
 
        <TextView
            android:id="@+id/homeDiaryTitle"
            android:layout_width="200dp"
            android:layout_height="match_parent"
-           android:layout_marginLeft="5dp"
+           android:layout_marginVertical="5dp"
            android:gravity="center_vertical"
+           android:layout_gravity="center_vertical"
            android:text="TITLE"
-           android:textSize="25dp" />
+           style="@style/normalTextStyle"
+
+           />
 
        <TextView
+
            android:id="@+id/homeDiaryDate"
            android:layout_width="wrap_content"
            android:layout_height="38dp"
            android:layout_marginRight="5dp"
            android:text="21 Feb 2018"
-           android:textSize="15dp"
-           android:layout_marginLeft="5dp"/>
+           android:textSize="12dp"
+           android:layout_gravity="center_vertical"
+           android:gravity="center_vertical"
+           android:layout_marginLeft="5dp"
+           style="@style/normalTextStyle"
+           />
    </LinearLayout>
 
 
