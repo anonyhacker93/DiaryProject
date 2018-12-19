@@ -39,12 +39,9 @@ import butterknife.ButterKnife;
 public class MainActivity extends AppCompatActivity {
 
     int appUseCount;
-
     @BindView(R.id.homeRecycler)
     RecyclerView homeRecycler;
-
     SearchView searchView;
-
     DiaryDatabase database;
     CustomHomeRecyclerAdapter homeListAdapter;
 
@@ -177,7 +174,6 @@ public class MainActivity extends AppCompatActivity {
                     case 2:
                         orderBy = "title asc";
                         refreshHomeRecycler(orderBy);
-                        Toast.makeText(MainActivity.this, "Choose Title", Toast.LENGTH_SHORT).show();
                         break;
                     case 3:
                         orderBy = "modified_date desc";
@@ -239,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
                         new CategoryDatabase(MainActivity.this).deleteCategory(cat_list.get(pos));
                         dialog.dismiss();
                         dialogCatg.dismiss();
-                        Toast.makeText(MainActivity.this, "Category delete successfully !", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Category deleted successfully !", Toast.LENGTH_SHORT).show();
                     }
                 });
                 builder.setNegativeButton("No", new DialogInterface.OnClickListener() {

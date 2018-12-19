@@ -55,8 +55,6 @@ public class WriteDiary extends AppCompatActivity {
         super.onCreate(bundle);
         setContentView(R.layout.activity_write_diary);
 
-       // Toast.makeText(this, "Categories add successfully !", Toast.LENGTH_SHORT).show();
-
         ButterKnife.bind(this);
         fetch_setCategory();
 
@@ -101,8 +99,6 @@ public class WriteDiary extends AppCompatActivity {
               String createdDate = DateFormatter.setDateFormat(curDate);
 
               if (database.insertData(new Diary(title, desc, createdDate, modifiedDate,catgName)) > 0) {
-                 // Toast.makeText(this, "U slct "+catName, Toast.LENGTH_SHORT).show();
-                  Toast.makeText(this, "Data inserted !", Toast.LENGTH_SHORT).show();
                   finish();
               } else {
                   Toast.makeText(this, "This name title already exists !", Toast.LENGTH_SHORT).show();
@@ -154,7 +150,6 @@ public class WriteDiary extends AppCompatActivity {
                 android.R.layout.simple_spinner_item, cat_list);
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         categorySpinner.setAdapter(dataAdapter);
-        Toast.makeText(this, "Categories set gracefully !", Toast.LENGTH_SHORT).show();
     }
 
 

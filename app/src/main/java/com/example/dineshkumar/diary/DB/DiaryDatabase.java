@@ -40,7 +40,7 @@ public class DiaryDatabase extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase sqLiteDatabase)
     {
 
-        String query = "Create table " + tabName + " (id integer primary key autoincrement, "+titleCol+"  text unique,"+descCol+" text,"+createDateCol+" text,"+modifyDateCol+" text,"+categoryCol+" text);";
+        String query = "Create table " + tabName + " (id integer primary key autoincrement, "+titleCol+"  text unique, "+descCol+" text,"+createDateCol+" text,"+modifyDateCol+" text,"+categoryCol+" text);";
         sqLiteDatabase.execSQL(query);
     }
 

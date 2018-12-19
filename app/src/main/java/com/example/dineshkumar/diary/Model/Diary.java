@@ -84,4 +84,21 @@ public class Diary implements Parcelable{
         parcel.writeString(this.modifiedDate);
         parcel.writeString(this.category);
     }
+
+    public void setTitle(String title) {
+
+        this.title = title;
+    }
+
+    public void setDesc(String desc) {
+        this.desc = desc;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public static Creator getCREATOR() {
+        return CREATOR;
+    }
 }
