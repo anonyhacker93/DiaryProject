@@ -1,12 +1,14 @@
 package com.example.dineshkumar.diary;
 
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
@@ -30,8 +32,15 @@ import android.widget.Toast;
 import com.example.dineshkumar.diary.DB.CategoryDatabase;
 import com.example.dineshkumar.diary.DB.DiaryDatabase;
 import com.example.dineshkumar.diary.Model.Diary;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -42,24 +51,26 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.homeRecycler)
     RecyclerView homeRecycler;
     SearchView searchView;
-    DiaryDatabase database;
+    //DiaryDatabase database;
     CustomHomeRecyclerAdapter homeListAdapter;
-
+    private ArrayList<Diary> _diaryArrayList;
     public static String orderBy = "created_date desc";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        _diaryArrayList = new ArrayList<>();
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ButterKnife.bind(this);
-        database = new DiaryDatabase(this);
+     //   database = new DiaryDatabase(this);
         //  addData();
         setFAB();
         setHomeRecycler();
-
+        String userName = getUserNameFromSharedPreference();
+        loadFromFirebase(userName);
     }
 
     @Override
@@ -92,8 +103,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void setHomeRecycler() {
-        ArrayList<Diary> diaryArrayList = database.getData(orderBy);
-        homeListAdapter = new CustomHomeRecyclerAdapter(diaryArrayList, this);
+    //    ArrayList<Diary> diaryArrayList = database.getData(orderBy);
+        homeListAdapter = new CustomHomeRecyclerAdapter(_diaryArrayList, this);
 
         homeRecycler.setLayoutManager(new LinearLayoutManager(this));
         homeRecycler.setHasFixedSize(true);
@@ -107,14 +118,14 @@ public class MainActivity extends AppCompatActivity {
         if (searchView != null) {
             searchView.setQuery("", false);
         }
-        refreshHomeRecycler(orderBy);
+       // refreshHomeRecycler(orderBy);
     }
 
     public void refreshHomeRecycler(String orderBy) {
-        Log.i("refresh", "Data refreshed");
+      /*  Log.i("refresh", "Data refreshed");
         ArrayList<Diary> diaryArrayList = database.getData(orderBy);
         homeListAdapter.addData(diaryArrayList);
-        homeListAdapter.notifyDataSetChanged();
+        homeListAdapter.notifyDataSetChanged();*/
     }
 
 
@@ -279,14 +290,68 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextChange(String newText) {
 
-                ArrayList<Diary> diariesList = database.getDataByWordMatch(newText);
-                if (diariesList != null) {
+       //         ArrayList<Diary> diariesList = database.getDataByWordMatch(newText);
+              /*  if (diariesList != null) {
                     homeListAdapter.addData(diariesList);
                     homeListAdapter.notifyDataSetChanged();
-                }
+                }*/
                 return true;
             }
         });
+    }
+
+    private void loadFromFirebase(final String userName) {
+        DatabaseReference reference = initFirebase(Constants.FIREBASE_ROOT_REFERENCE);
+
+        final ProgressDialog progressDialog = new ProgressDialog(MainActivity.this);
+        progressDialog.setTitle("Please wait");
+        progressDialog.setMessage("Loading Data");
+        progressDialog.setIndeterminate(true);
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+
+        reference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Iterator<DataSnapshot> iterator = dataSnapshot.child(userName).child(Constants.FIREBASE_DIARY_REFERENCE).getChildren().iterator();
+                Diary diary;
+                _diaryArrayList.clear();
+                while (iterator.hasNext()) { //Loading Category
+                    DataSnapshot dataShot1 = iterator.next();
+                    Iterator<DataSnapshot> itr1 = dataShot1.getChildren().iterator();
+                    while ((itr1.hasNext())) { //Loading Title
+                        DataSnapshot dataShot3 = itr1.next();
+                        diary = dataShot3.getValue(Diary.class);
+                        _diaryArrayList.add(diary);
+                    }
+                }
+                homeListAdapter.notifyDataSetChanged();
+                progressDialog.dismiss();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.i("DiaryTag : ", "Exception : " + databaseError.getMessage());
+                Toast.makeText(MainActivity.this, "Exception : " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                progressDialog.dismiss();
+            }
+        });
+
+
+    }
+
+    private DatabaseReference initFirebase(String ref) {
+        FirebaseApp.initializeApp(this);
+        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+        DatabaseReference usersReference = firebaseDatabase.getReference(ref);
+        return usersReference;
+    }
+
+
+    private String getUserNameFromSharedPreference(){
+        SharedPreferences preferences = getSharedPreferences(Constants.SHARED_PREF_USERNAME,MODE_PRIVATE);
+        String userName = preferences.getString(Constants.SHARED_PREF_USERNAME,null);
+        return userName;
     }
 
 }

@@ -2,7 +2,9 @@ package com.example.dineshkumar.diary;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
@@ -18,7 +20,13 @@ import android.widget.Toast;
 import com.example.dineshkumar.diary.CustomUtils.DateFormatter;
 import com.example.dineshkumar.diary.DB.CategoryDatabase;
 import com.example.dineshkumar.diary.DB.DiaryDatabase;
+import com.example.dineshkumar.diary.Model.Category;
 import com.example.dineshkumar.diary.Model.Diary;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -29,6 +37,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class WriteDiary extends AppCompatActivity {
+   final static String CONCAT_CHAR = "_dup";
 
     @BindView(R.id.edTitle)
     EditText edTitle;
@@ -95,10 +104,12 @@ public class WriteDiary extends AppCompatActivity {
       {
           if(editableMode == false)
           {
+              modifiedDate="";
               Date curDate = new Date();
               String createdDate = DateFormatter.setDateFormat(curDate);
-
-              if (database.insertData(new Diary(title, desc, createdDate, modifiedDate,catgName)) > 0) {
+              Diary diary = new Diary(title, desc, createdDate, modifiedDate,catgName);
+              uploadOnFirebase(diary);
+              if (database.insertData(diary) > 0) {
                   finish();
               } else {
                   Toast.makeText(this, "This name title already exists !", Toast.LENGTH_SHORT).show();
@@ -119,6 +130,27 @@ public class WriteDiary extends AppCompatActivity {
       {
           ShowAlertDialog("Set Title","Please set a title first",false);
       }
+    }
+
+    private void uploadOnFirebase(final Diary diary) {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference myRef = database.getReference(Constants.FIREBASE_ROOT_REFERENCE);
+        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String userName = getUserNameFromSharedPreference();// Retrieved from SharedPreference
+                DatabaseReference childRef = myRef.child(userName).child(Constants.FIREBASE_DIARY_REFERENCE).child(diary.getCategory()).child(diary.getTitle());
+                    childRef.setValue(diary);
+                    Log.i("myTag", "Data Inserted");
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.i("myTag", "Problem while adding ");
+                Toast.makeText(getBaseContext(), "ErrorTag :" + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
     }
 
     void ShowAlertDialog(String title,String msg,boolean buttonEnable)
@@ -159,5 +191,10 @@ public class WriteDiary extends AppCompatActivity {
         return true;
     }
 
+    private String getUserNameFromSharedPreference(){
+        SharedPreferences preferences = getSharedPreferences(Constants.SHARED_PREF_USERNAME,MODE_PRIVATE);
+        String userName = preferences.getString(Constants.SHARED_PREF_USERNAME,null);
+        return userName;
+    }
 
 }

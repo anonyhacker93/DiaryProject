@@ -1,6 +1,7 @@
 package com.example.dineshkumar.diary;
 
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
@@ -23,8 +24,7 @@ import butterknife.OnClick;
 
 public class AddCategory extends AppCompatActivity {
     public static final String TAG = "com.example.dineshkumar.diary.AddCategory";
-    public static final String FIREBASE_CATEG_REFERENCE = "Category";
-    public static final String FIREBASE_ROOT_REFERENCE = "Root";
+
     @BindView(R.id.catgName)
     EditText edCatgName;
 
@@ -49,13 +49,13 @@ public class AddCategory extends AppCompatActivity {
 
     private void addToFirebase(final Category category) {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        final DatabaseReference myRef = database.getReference(FIREBASE_ROOT_REFERENCE);
+        final DatabaseReference myRef = database.getReference(Constants.FIREBASE_ROOT_REFERENCE);
         myRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (!dataSnapshot.child(category.getName()).exists()) {
-                    String email = "blahblah";
-                    myRef.child(email).child(FIREBASE_CATEG_REFERENCE).setValue(category);
+                    String email = getUserNameFromSharedPreference();
+                    myRef.child(email).child(Constants.FIREBASE_CATEG_REFERENCE).setValue(category);
                     Log.i("myTag", "Category added");
                 } else {
                     Toast.makeText(getBaseContext(), "Oh ! unable to Update !!", Toast.LENGTH_SHORT).show();
@@ -97,5 +97,11 @@ public class AddCategory extends AppCompatActivity {
         onBackPressed();
         Log.i("backTg", "Back pressed");
         return true;
+    }
+
+    private String getUserNameFromSharedPreference(){
+        SharedPreferences preferences = getSharedPreferences(Constants.SHARED_PREF_USERNAME,MODE_PRIVATE);
+        String userName = preferences.getString(Constants.SHARED_PREF_USERNAME,null);
+        return userName;
     }
 }

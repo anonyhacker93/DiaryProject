@@ -14,6 +14,8 @@ public class Diary implements Parcelable{
     String modifiedDate;
     String category;
 
+    public Diary(){}
+
     public Diary(String title, String desc, String createdDate, String modifiedDate, String category) {
         this.title = title;
         this.desc = desc;
