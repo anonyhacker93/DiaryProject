@@ -39,6 +39,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -46,7 +47,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class MainActivity extends AppCompatActivity {
-
+    public static final String INTENT_DIARY_KEY = "Diary";
+    public static final String INTENT_LOGOUT_KEY = "Logout";
     int appUseCount;
     @BindView(R.id.homeRecycler)
     RecyclerView homeRecycler;
@@ -61,11 +63,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         _diaryArrayList = new ArrayList<>();
+        FirebaseApp.initializeApp(this);
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ButterKnife.bind(this);
-     //   database = new DiaryDatabase(this);
+        //   database = new DiaryDatabase(this);
         //  addData();
         setFAB();
         setHomeRecycler();
@@ -86,6 +89,11 @@ public class MainActivity extends AppCompatActivity {
             ShowCategoryFilterDialog("Title", "Msg is here");
             return true;
         }
+        if(id== R.id.showLogoutMenu){
+            Intent intent = new Intent(MainActivity.this,LoginActivity.class);
+            intent.putExtra(INTENT_LOGOUT_KEY,true);
+            startActivity(intent);
+        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -103,13 +111,44 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void setHomeRecycler() {
-    //    ArrayList<Diary> diaryArrayList = database.getData(orderBy);
-        homeListAdapter = new CustomHomeRecyclerAdapter(_diaryArrayList, this);
+        //    ArrayList<Diary> diaryArrayList = database.getData(orderBy);
+        homeListAdapter = new CustomHomeRecyclerAdapter(MainActivity.this, _diaryArrayList,
+                new CustomHomeRecyclerAdapter.OnCardClickListener() {
+                    public void onClick(Diary diary) {
+                        Intent viewDiaryIntent = new Intent(MainActivity.this, ViewDiary.class);
+                        viewDiaryIntent.putExtra(INTENT_DIARY_KEY, (Serializable) diary);
+                        startActivity(viewDiaryIntent);
+                    }
+
+                    public void onLongClick(Diary diary) {
+                        showAlertDialogForDeleteRecord(diary);
+
+                    }
+                }
+        );
 
         homeRecycler.setLayoutManager(new LinearLayoutManager(this));
         homeRecycler.setHasFixedSize(true);
         homeRecycler.setAdapter(homeListAdapter);
 
+    }
+
+    private void deleteRecordFromFirebase(final Diary diary) {
+        final String userName = getUserNameFromSharedPreference();
+
+        final ProgressDialog progressDialog = new ProgressDialog(MainActivity.this);
+        progressDialog.setTitle("Please wait");
+        progressDialog.setMessage("Loading Data");
+        progressDialog.setIndeterminate(true);
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+
+        DatabaseReference reference = initFirebase(Constants.FIREBASE_ROOT_REFERENCE);
+        reference.child(userName)
+                .child(Constants.FIREBASE_DIARY_REFERENCE)
+                .child(diary.getCategory())
+                .child(diary.getTitle()).removeValue();
+        progressDialog.dismiss();
     }
 
     @Override
@@ -118,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
         if (searchView != null) {
             searchView.setQuery("", false);
         }
-       // refreshHomeRecycler(orderBy);
+        // refreshHomeRecycler(orderBy);
     }
 
     public void refreshHomeRecycler(String orderBy) {
@@ -290,7 +329,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextChange(String newText) {
 
-       //         ArrayList<Diary> diariesList = database.getDataByWordMatch(newText);
+                //         ArrayList<Diary> diariesList = database.getDataByWordMatch(newText);
               /*  if (diariesList != null) {
                     homeListAdapter.addData(diariesList);
                     homeListAdapter.notifyDataSetChanged();
@@ -340,17 +379,34 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    void showAlertDialogForDeleteRecord(final Diary diary) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+
+        builder.setMessage("Do you want to delete it ?")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        deleteRecordFromFirebase(diary);
+                    }
+                })
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+    }
+
     private DatabaseReference initFirebase(String ref) {
-        FirebaseApp.initializeApp(this);
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         DatabaseReference usersReference = firebaseDatabase.getReference(ref);
         return usersReference;
     }
 
 
-    private String getUserNameFromSharedPreference(){
-        SharedPreferences preferences = getSharedPreferences(Constants.SHARED_PREF_USERNAME,MODE_PRIVATE);
-        String userName = preferences.getString(Constants.SHARED_PREF_USERNAME,null);
+    private String getUserNameFromSharedPreference() {
+        SharedPreferences preferences = getSharedPreferences(Constants.SHARED_PREF_USERNAME, MODE_PRIVATE);
+        String userName = preferences.getString(Constants.SHARED_PREF_USERNAME, null);
         return userName;
     }
 

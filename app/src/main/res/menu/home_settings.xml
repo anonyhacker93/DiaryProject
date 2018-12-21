@@ -12,4 +12,10 @@ tools:context="com.example.dineshkumar.diary.MainActivity">
         android:orderInCategory="101"
         android:title="@string/show_category"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/showLogoutMenu"
+        android:orderInCategory="101"
+        android:title="Logout"
+        app:showAsAction="never" />
 </menu>

@@ -34,13 +34,31 @@ public class LoginActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
-        initFirebase();
 
+        Intent intent = getIntent();
+        Bundle bundle = intent.getExtras();
+        if (bundle != null) {
+            boolean isLogout = bundle.getBoolean(MainActivity.INTENT_LOGOUT_KEY);
+            if (isLogout) {
+                upassword.setText("");
+                saveToSharedPreference(null);
+            }
+        } else {
+            String userName = getUserNameFromSharedPreference();
+            if (userName != null) { //Already logged-in
+                gotoMainActivity();
+            }
+        }
+        initFirebase();
     }
 
     @OnClick(R.id.btnLogin)
     void login() {
-        loginFirebase();
+        final String uName = uname.getText().toString();
+        final String uPwd = upassword.getText().toString();
+        User user = new User(uName, uPwd);
+        loginFirebase(user);
+
     }
 
     @OnClick(R.id.btnSignup)
@@ -58,10 +76,11 @@ public class LoginActivity extends BaseActivity {
     }
 
 
-    private void loginFirebase() {
-        final String uName = uname.getText().toString();
-        final String uPwd = upassword.getText().toString();
-        if (!uPwd.isEmpty() && !uName.isEmpty()) {
+    private void loginFirebase(User user) {
+        if (user == null) return;
+        final String uName = user.getUname();
+        final String uPwd = user.getPassword();
+        if (!user.getUname().isEmpty() && !user.getPassword().isEmpty()) {
             final ProgressDialog progressDialog = getProgressDialog(LoginActivity.this, "Please wait", "Authenticating...");
             progressDialog.show();
             usersReference.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -72,8 +91,7 @@ public class LoginActivity extends BaseActivity {
                         if (!uPwd.isEmpty() && !uName.isEmpty()) {
                             User userInfo = dataSnapshot.child(uName).getValue(User.class);
                             if (uPwd.equals(userInfo.getPassword())) {
-                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                                startActivity(intent);
+                                gotoMainActivity();
                                 Toast.makeText(LoginActivity.this, "Login Successfully !", Toast.LENGTH_SHORT).show();
                                 saveToSharedPreference(uName);
                                 finish();
@@ -98,7 +116,7 @@ public class LoginActivity extends BaseActivity {
                     progressDialog.dismiss();
                 }
             });
-        }else{
+        } else {
             if (uName.isEmpty()) {
                 Toast.makeText(LoginActivity.this, "Please enter user name ", Toast.LENGTH_SHORT).show();
             } else {
@@ -107,12 +125,23 @@ public class LoginActivity extends BaseActivity {
         }
     }
 
-    private void saveToSharedPreference(String userName){
-        SharedPreferences preferences = getSharedPreferences(SHARED_PREF_USERNAME,MODE_PRIVATE);
-        SharedPreferences.Editor editor =preferences.edit();
-        editor.putString(SHARED_PREF_USERNAME,userName);
+    private void gotoMainActivity() {
+        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+        startActivity(intent);
+    }
+
+    private void saveToSharedPreference(String userName) {
+        SharedPreferences preferences = getSharedPreferences(SHARED_PREF_USERNAME, MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(SHARED_PREF_USERNAME, userName);
         editor.commit();
         editor.apply();
+    }
+
+    private String getUserNameFromSharedPreference() {
+        SharedPreferences preferences = getSharedPreferences(Constants.SHARED_PREF_USERNAME, MODE_PRIVATE);
+        String userName = preferences.getString(Constants.SHARED_PREF_USERNAME, null);
+        return userName;
     }
 
 }

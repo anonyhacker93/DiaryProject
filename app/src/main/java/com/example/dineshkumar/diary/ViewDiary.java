@@ -3,29 +3,26 @@ package com.example.dineshkumar.diary;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.dineshkumar.diary.CustomUtils.DateFormatter;
 import com.example.dineshkumar.diary.DB.DiaryDatabase;
 import com.example.dineshkumar.diary.Model.Diary;
-import com.example.dineshkumar.diary.R;
 
-import java.util.ArrayList;
+import java.io.Serializable;
+import java.util.Date;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
-import butterknife.OnLongClick;
+
+import static com.example.dineshkumar.diary.MainActivity.INTENT_DIARY_KEY;
 
 public class ViewDiary extends AppCompatActivity {
 
@@ -37,7 +34,7 @@ public class ViewDiary extends AppCompatActivity {
     TextView desc;
 
     @BindView(R.id.viewCreatedDate)
-            TextView createDate;
+    TextView createDate;
 
     @BindView(R.id.viewCategory)
     TextView category;
@@ -63,36 +60,30 @@ public class ViewDiary extends AppCompatActivity {
     }
 
     private void setDiaryViewContent() {
-        database = new DiaryDatabase(this);
-        Intent intent =  getIntent();
-        if(intent != null)
-        {
+        Intent intent = getIntent();
+        if (intent != null) {
             Bundle bundle = intent.getExtras();
-            if(bundle !=null)
-            {
-                String queryTitle =  bundle.getString("title");
-                if (queryTitle != null) { // Fresh Request
-                    ArrayList<Diary> arrayList = database.getData("title", queryTitle);
-                    Diary diary = arrayList.get(0);
+            if (bundle != null) {
+                Diary diary = (Diary) bundle.getParcelable(INTENT_DIARY_KEY);
+                if (diary == null) {
+                    Log.d("DiaryTag", "ViewDiary :setDiaryViewContent :: diary is null");
+                    return;
+                }
+                if (diary.getTitle() != null) { // Fresh Request
                     title.setText(diary.getTitle());
                     desc.setText(diary.getDesc());
                     createDate.setText(diary.getCreatedDate());
                     category.setText(diary.getCategory());
                 } else {
-                    ArrayList<Diary> arrayList = database.getData("title", title.getText().toString());
+                   /* ArrayList<Diary> arrayList = database.getData("title", title.getText().toString());
                     Diary diary = arrayList.get(0);
                     desc.setText(diary.getDesc());
                     createDate.setText(diary.getCreatedDate());
-                    category.setText(diary.getCategory());
-
+                    category.setText(diary.getCategory());*/
+                    Toast.makeText(this, "ViewDiary :setDiaryViewContent in else", Toast.LENGTH_SHORT).show();
                 }
             }
         }
-
-
-
-
-
     }
 
     void deleteDiaryView() {
@@ -106,11 +97,11 @@ public class ViewDiary extends AppCompatActivity {
         String descStr = desc.getText().toString();
         String catgStr = category.getText().toString();
         String createDateStr = createDate.getText().toString();
-
-        Diary diary = new Diary(titleStr, descStr, createDateStr, null,catgStr);
-        Log.i("catTags",catgStr);
+        String modifiedDate = DateFormatter.setDateFormat(new Date());
+        Diary diary = new Diary(titleStr, descStr, createDateStr, modifiedDate, catgStr);
+        Log.i("catTags", catgStr);
         Intent intent = new Intent(ViewDiary.this, WriteDiary.class);
-        intent.putExtra("diaryObj", diary);
+        intent.putExtra(INTENT_DIARY_KEY, (Serializable) diary);
         startActivity(intent);
     }
 
@@ -147,7 +138,7 @@ public class ViewDiary extends AppCompatActivity {
     @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();
-        Log.i("backTg","Back pressed");
+        Log.i("backTg", "Back pressed");
         return true;
     }
 }

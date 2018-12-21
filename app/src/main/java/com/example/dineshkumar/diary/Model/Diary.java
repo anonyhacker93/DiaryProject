@@ -3,11 +3,13 @@ package com.example.dineshkumar.diary.Model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.io.Serializable;
+
 /**
  * Created by Dinesh Kumar on 2/21/2018.
  */
 
-public class Diary implements Parcelable{
+public class Diary implements Parcelable,Serializable{
     String title;
     String desc;
     String createdDate;

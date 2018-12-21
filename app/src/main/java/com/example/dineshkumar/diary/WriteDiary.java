@@ -1,18 +1,14 @@
 package com.example.dineshkumar.diary;
 
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatSpinner;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -20,7 +16,6 @@ import android.widget.Toast;
 import com.example.dineshkumar.diary.CustomUtils.DateFormatter;
 import com.example.dineshkumar.diary.DB.CategoryDatabase;
 import com.example.dineshkumar.diary.DB.DiaryDatabase;
-import com.example.dineshkumar.diary.Model.Category;
 import com.example.dineshkumar.diary.Model.Diary;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -28,7 +23,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -36,8 +30,10 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
+import static com.example.dineshkumar.diary.MainActivity.INTENT_DIARY_KEY;
+
 public class WriteDiary extends AppCompatActivity {
-   final static String CONCAT_CHAR = "_dup";
+    final static String CONCAT_CHAR = "_dup";
 
     @BindView(R.id.edTitle)
     EditText edTitle;
@@ -50,7 +46,6 @@ public class WriteDiary extends AppCompatActivity {
     @BindView(R.id.categorySpinner)
     AppCompatSpinner categorySpinner;
 
-    DiaryDatabase database;
     Diary diary;
     CategoryDatabase categoryDatabase;
 
@@ -59,6 +54,7 @@ public class WriteDiary extends AppCompatActivity {
     boolean editableMode;
 
     ArrayAdapter<String> dataAdapter;
+
     @Override
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
@@ -66,82 +62,76 @@ public class WriteDiary extends AppCompatActivity {
 
         ButterKnife.bind(this);
         fetch_setCategory();
-
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-         database = new DiaryDatabase(this);
-
-          if (getIntent().getExtras() != null) {  // Editing existing Diary note
-          diary = getIntent().getExtras().getParcelable("diaryObj");
-          Date curDate = new Date();
-
-          modifiedDate = DateFormatter.setDateFormat(curDate);
-
-          diary.setModifiedDate(modifiedDate);
-          edTitle.setText(diary.getTitle());
-          edDesc.setText(diary.getDesc());
-          categorySpinner.setSelection(dataAdapter.getPosition(diary.getCategory()));
-          editableMode = true;
-          edTitle.setEnabled(false);
-        }
-        else
-        {
+        if (getIntent().getExtras() != null) {
+            diary = getIntent().getExtras().getParcelable(INTENT_DIARY_KEY);
+            editDiary(diary);
+        } else {
             edTitle.setEnabled(true);
             editableMode = false;
         }
     }
 
-    @OnClick(R.id.btnSave)
-   void writeIntoDB()
-    {
-      String title = edTitle.getText().toString();
-      String desc = edDesc.getText().toString();
-      String catgName = (String) categorySpinner.getSelectedItem();
+    private void editDiary(Diary diary) {
+        modifiedDate = DateFormatter.setDateFormat(new Date());
 
-      if(title.length() >0)
-      {
-          if(editableMode == false)
-          {
-              modifiedDate="";
-              Date curDate = new Date();
-              String createdDate = DateFormatter.setDateFormat(curDate);
-              Diary diary = new Diary(title, desc, createdDate, modifiedDate,catgName);
-              uploadOnFirebase(diary);
-              if (database.insertData(diary) > 0) {
-                  finish();
-              } else {
-                  Toast.makeText(this, "This name title already exists !", Toast.LENGTH_SHORT).show();
-              }
-          }
-          else
-          {
-              if(diary !=null) {
-                  String modifiedDate = DateFormatter.setDateFormat(new Date());
-                   diary = new Diary(title,desc,diary.getCreatedDate(), modifiedDate, catgName);
-                   database.updateData("title", title, diary);
-                   Toast.makeText(this, "Updated !", Toast.LENGTH_SHORT).show();
-                   finish();
-              }
-          }
-      }
-      else
-      {
-          ShowAlertDialog("Set Title","Please set a title first",false);
-      }
+        diary.setModifiedDate(modifiedDate);
+        edTitle.setText(diary.getTitle());
+        edDesc.setText(diary.getDesc());
+        categorySpinner.setSelection(dataAdapter.getPosition(diary.getCategory()));
+        editableMode = true;
+        edTitle.setEnabled(false);
     }
 
-    private void uploadOnFirebase(final Diary diary) {
+    @OnClick(R.id.btnSave)
+    void writeIntoDB() {
+        String title = edTitle.getText().toString();
+        String desc = edDesc.getText().toString();
+        String catgName = (String) categorySpinner.getSelectedItem();
+
+        if (title.length() > 0) {
+            if (editableMode == false) {
+                String createdDate = DateFormatter.setDateFormat(new Date());
+                Diary diary = new Diary(title, desc, createdDate, "", catgName);
+                uploadOnFirebase(diary,editableMode);
+            } else {
+                if (diary != null) {
+                    String modifiedDate = DateFormatter.setDateFormat(new Date());
+                    diary = new Diary(title, desc, diary.getCreatedDate(), modifiedDate, catgName);
+                    uploadOnFirebase(diary,editableMode);
+                }
+            }
+
+        } else {
+            ShowAlertDialog("Set Title", "Please set a title first", false);
+        }
+    }
+
+    private void uploadOnFirebase(final Diary diary, final boolean editableMode) {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
+
         final DatabaseReference myRef = database.getReference(Constants.FIREBASE_ROOT_REFERENCE);
         myRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 String userName = getUserNameFromSharedPreference();// Retrieved from SharedPreference
                 DatabaseReference childRef = myRef.child(userName).child(Constants.FIREBASE_DIARY_REFERENCE).child(diary.getCategory()).child(diary.getTitle());
+                if (dataSnapshot.child(userName).child(Constants.FIREBASE_DIARY_REFERENCE).child(diary.getCategory()).child(diary.getTitle()).exists()) {
+                    if (editableMode) {
+                        childRef.setValue(diary);
+                        Log.i("myTag", "Data Updated");
+                        finish();
+                    } else {
+                        Toast.makeText(WriteDiary.this, "This title already exist.", Toast.LENGTH_SHORT).show();
+                    }
+
+                }else{
                     childRef.setValue(diary);
-                    Log.i("myTag", "Data Inserted");
+                    finish();
+                }
             }
 
             @Override
@@ -153,8 +143,7 @@ public class WriteDiary extends AppCompatActivity {
 
     }
 
-    void ShowAlertDialog(String title,String msg,boolean buttonEnable)
-    {
+    void ShowAlertDialog(String title, String msg, boolean buttonEnable) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         builder.setTitle(title)
@@ -173,10 +162,9 @@ public class WriteDiary extends AppCompatActivity {
                 .show();
     }
 
-    void fetch_setCategory()
-    {
+    void fetch_setCategory() {
         categoryDatabase = new CategoryDatabase(this);
-        ArrayList <String>cat_list = categoryDatabase.getCategories();
+        ArrayList<String> cat_list = categoryDatabase.getCategories();
 
         dataAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_spinner_item, cat_list);
@@ -191,9 +179,9 @@ public class WriteDiary extends AppCompatActivity {
         return true;
     }
 
-    private String getUserNameFromSharedPreference(){
-        SharedPreferences preferences = getSharedPreferences(Constants.SHARED_PREF_USERNAME,MODE_PRIVATE);
-        String userName = preferences.getString(Constants.SHARED_PREF_USERNAME,null);
+    private String getUserNameFromSharedPreference() {
+        SharedPreferences preferences = getSharedPreferences(Constants.SHARED_PREF_USERNAME, MODE_PRIVATE);
+        String userName = preferences.getString(Constants.SHARED_PREF_USERNAME, null);
         return userName;
     }
 
